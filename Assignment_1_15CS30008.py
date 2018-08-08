@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[179]:
+# In[1]:
 
 
 import nltk 
@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import math
 
 
-# In[180]:
+# In[2]:
 
 
 print("##########  ASSIGNMENT PART 1  ##############")
@@ -22,23 +22,22 @@ dataset = brown.sents()
 print("Dataset loaded with %d no of sentences."%len(dataset))
 
 
-# In[181]:
+# In[3]:
 
 
 dataProcessed = [ [ [''.join(e for e in word if e.isalpha())][0].lower() for word in sentence if [''.join(e for e in word if e.isalpha())][0] != '' and word not in punctuation] for sentence in dataset ]
 print("Data preprocessed with special characters removed.")
 
 
-# In[182]:
+# In[4]:
 
 
 train = dataProcessed[0:40000]
 test = dataProcessed[40000:]
 print("Train data : ",40000)
-print(train[0])
 
 
-# In[183]:
+# In[31]:
 
 
 class LanguageModel():
@@ -100,7 +99,7 @@ class LanguageModel():
             for word in ngrams(sent,1):
                 unique[word] = 1
                 
-        un = len(unique) + 2
+        un = len(unique) + 3
         
         goodSmoothStore = np.zeros(maxim + 2)
         gooddeno = 0
@@ -128,7 +127,14 @@ class LanguageModel():
                     self.modelDictionary[(w1,w2)] /= (self.laplace_constant*un + subcount)         
                 elif self.smoothing == 'goodturing':
                     tempValue = model[w1][w2]
-                    rstar = float(tempValue+1)*goodSmoothStore[tempValue+1]/goodSmoothStore[tempValue]
+                    
+                    ind = tempValue+1
+                    for i in range(tempValue+1,len(goodSmoothStore)):
+                        if goodSmoothStore[i] != 0:
+                            ind = i
+                            break
+                    
+                    rstar = float(ind)*goodSmoothStore[ind]/goodSmoothStore[tempValue]
                     model[w1][w2] = rstar/float(gooddeno)
                     self.modelDictionary[(w1,w2)] = rstar/float(gooddeno)
            
@@ -238,7 +244,7 @@ class LanguageModel():
             for word in ngrams(sent,1):
                 unique[word] = 1
         
-        un = len(unique) + 2
+        un = len(unique) + 3
         goodSmoothStore = np.zeros(maxim + 2)
         gooddeno = 0
         
@@ -269,7 +275,14 @@ class LanguageModel():
                         self.modelDictionary[(w1,w2,w3)] /= (self.laplace_constant*un + subcount)
                     elif self.smoothing == 'goodturing':
                         tempValue = model[w1][w2][w3]
-                        rstar = float(tempValue+1)*goodSmoothStore[tempValue+1]/goodSmoothStore[tempValue]
+                        
+                        ind = tempValue+1
+                        for i in range(tempValue+1,len(goodSmoothStore)):
+                            if goodSmoothStore[i] != 0:
+                                ind = i
+                                break
+
+                        rstar = float(ind)*goodSmoothStore[ind]/goodSmoothStore[tempValue]
                         model[w1][w2][w3] = rstar/gooddeno
                     
                 model[w1][w2]['UKN'] = 0
@@ -391,7 +404,7 @@ class LanguageModel():
                     if prob == 0:
                         unigramLLH.append(float('Inf'))
                     else:
-                        unigramLLH.append(prob**(1/float(len(sent))))
+                        unigramLLH.append((1.0/prob)**(1/float(len(sent))))
                 return unigramLLH
             elif self.n_gram == 2:
                 bigramLLH = []
@@ -403,7 +416,7 @@ class LanguageModel():
                     if prob == 0:
                         bigramLLH.append(float('Inf'))
                     else:
-                        bigramLLH.append(prob**(1/float(len(sent))))
+                        bigramLLH.append((1.0/prob)**(1/float(len(sent))))
                 return bigramLLH
             elif self.n_gram == 3:
                 trigramLLH = []
@@ -415,13 +428,13 @@ class LanguageModel():
                     if prob == 0:
                         trigramLLH.append(float('Inf'))
                     else:
-                        trigramLLH.append(prob**(1/float(len(sent))))
+                        trigramLLH.append((1.0/prob)**(1/float(len(sent))))
                 return trigramLLH
     def frequency(self):
         return self.frequencyDistribution
 
 
-# In[199]:
+# In[32]:
 
 
 #Task 1
@@ -430,7 +443,7 @@ bg = LanguageModel(train,2,plotZipf=True)
 tg = LanguageModel(train,3,plotZipf=True)
 
 
-# In[200]:
+# In[33]:
 
 
 # Task 1
@@ -438,19 +451,19 @@ tg = LanguageModel(train,3,plotZipf=True)
 ug.showPlot()
 
 
-# In[201]:
+# In[34]:
 
 
 bg.showPlot()
 
 
-# In[202]:
+# In[35]:
 
 
 tg.showPlot()
 
 
-# In[207]:
+# In[36]:
 
 
 # Task 1
@@ -472,7 +485,7 @@ for c in top10Tri.items():
     print(c,'\\\\')
 
 
-# In[197]:
+# In[37]:
 
 
 # Task 1
@@ -485,7 +498,7 @@ for case in testcases:
 print('\\vspace{2mm}')
 
 
-# In[190]:
+# In[38]:
 
 
 #Task 1
@@ -500,7 +513,7 @@ print("\\textit{Perplexity for bigram model:} \\\\ \\vspace{1mm} ",bg.test(testc
 print("\\textit{Perplexity for trigram model:} \\\\ \\vspace{1mm} ",tg.test(testcases,type='perplexity'),' \\\\ \\vspace{2mm}')
 
 
-# In[191]:
+# In[39]:
 
 
 print("#########  ASSIGNMENT PART 2 ###############")
@@ -589,31 +602,28 @@ print("\\textit{Perplexity for bigram model:} \\\\ \\vspace{1mm} ",bg.test(testc
 print("\\textit{Perplexity for trigram model:} \\\\ \\vspace{1mm} ",tg.test(testcases,type='perplexity'),' \\\\ \\vspace{2mm}')
 
 
-# In[192]:
+# In[42]:
 
 
 print("#########  ASSIGNMENT PART 3 ###############\n Using Good-Turing smoothing")
 
-ug = LanguageModel(train,1,smoothing='goodturing')
 bg = LanguageModel(train,2,smoothing='goodturing')
 tg = LanguageModel(train,3,smoothing='goodturing')
 
 #Log likelihood
-print("\\textit{Loglikelihood for unigram model:} \\\\ \\vspace{1mm} ", ug.test(testcases),' \\\\ \\vspace{2mm}')
 print("\\textit{Loglikelihood for bigram model:} \\\\ \\vspace{1mm} ",bg.test(testcases),' \\\\ \\vspace{2mm}')
 print("\\textit{Loglikelihood for trigram model:} \\\\ \\vspace{1mm} ",tg.test(testcases),' \\\\ \\vspace{2mm}')
 
 # Perplexity
-print("\\textit{Perplexity for unigram model:} \\\\ \\vspace{1mm} ", ug.test(testcases,type='perplexity'),' \\\\ \\vspace{2mm}')
 print("\\textit{Perplexity for bigram model:} \\\\ \\vspace{1mm} ",bg.test(testcases,type='perplexity'),' \\\\ \\vspace{2mm}')
 print("\\textit{Perplexity for trigram model:} \\\\ \\vspace{1mm} ",tg.test(testcases,type='perplexity'),' \\\\ \\vspace{2mm}')
 
 
-# In[193]:
+# In[41]:
 
 
 print("#########  ASSIGNMENT PART 4 ###############")
-print("Using Interpolation smoothing with lambda ",0.2)
+print("\\textit{\\textbf{Using Interpolation smoothing with $\\lambda = $ 0.2 $\\lambda_{1} = $ 0.2 $\\lambda_{2} = $ 0.2}} \\\\ \\vspace{2mm}")
 
 
 bg = LanguageModel(train,2,smoothing='interpolation',lambda1=0.2)
@@ -628,7 +638,7 @@ print("\\textit{Perplexity for bigram model:} \\\\ \\vspace{1mm} ",bg.test(testc
 print("\\textit{Perplexity for trigram model:} \\\\ \\vspace{1mm} ",tg.test(testcases,type='perplexity'),' \\\\ \\vspace{2mm}')
 
 
-print("Using Interpolation smoothing with lambda ",0.5)
+print("\\textit{\\textbf{Using Interpolation smoothing with $\\lambda = $ 0.5 $\\lambda_{1} = $ 0.3 $\\lambda_{2} = $ 0.3}} \\\\ \\vspace{2mm}")
 bg = LanguageModel(train,2,smoothing='interpolation',lambda1=0.5)
 tg = LanguageModel(train,3,smoothing='interpolation',lambda1=0.3,lambda2=0.3)
 
@@ -641,7 +651,7 @@ print("\\textit{Perplexity for bigram model:} \\\\ \\vspace{1mm} ",bg.test(testc
 print("\\textit{Perplexity for trigram model:} \\\\ \\vspace{1mm} ",tg.test(testcases,type='perplexity'),' \\\\ \\vspace{2mm}')
 
 
-print("Using Interpolation smoothing with lambda ",0.8)
+print("\\textit{\\textbf{Using Interpolation smoothing with $\\lambda = $ 0.8 $\\lambda_{1} = $ 0.5 $\\lambda_{2} = $ 0.5}} \\\\ \\vspace{2mm}")
 bg = LanguageModel(train,2,smoothing='interpolation',lambda1=0.8)
 tg = LanguageModel(train,3,smoothing='interpolation',lambda1=0.5,lambda2=0.5)
 
